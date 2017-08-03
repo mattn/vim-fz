@@ -9,9 +9,9 @@ function! s:exit_cb(job, st)
   exe 'edit' file
 endfunction
 
-let s:fz_command = get(g:, 'fz_command', 'files -A | gof')
+let s:fz_command = get(g:, 'fz_command', 'files -I FZ_IGNORE -A | gof')
 function! s:fz()
-  let $FILES_IGNORE_PATTERN = '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$'
+  let $FZ_IGNORE = '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$'
   let s:buf = term_start(printf('%s %s %s', &shell, &shellcmdflag, shellescape(s:fz_command)), {'exit_cb': function('s:exit_cb')})
 endfunction
 
