@@ -2,7 +2,7 @@
 
 Ultra Fast Fuzzy finder for Vim8.
 
-![Fz](https://github.com/mattn/vim-fz/master/screenshot.gif)
+![Fz](https://raw.githubusercontent.com/mattn/vim-fz/master/screenshot.gif)
 
 ## Usage
 
