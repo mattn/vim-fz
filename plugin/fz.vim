@@ -4,6 +4,7 @@ function! s:exit_cb(job, st)
     return
   endif
   call ch_close(job_getchannel(term_getjob(s:buf)))
+  redraw
   let file = getbufline(s:buf, 1)[0]
   exe s:buf 'bwipe!'
   exe 'edit' file
