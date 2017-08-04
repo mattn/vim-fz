@@ -1,17 +1,12 @@
 function! s:done(...)
-  let files = getbufline(s:buf, 1, '$')
-  if len(files) == 0
+  "let files = getbufline(s:buf, 1, '$')
+  let file = term_getline(s:buf, 1)
+  if len(file) == 0
     call timer_start(10, function('s:done'))
     return
   endif
   exe s:buf 'bwipe!'
-  if len(files) > 0
-    for file in files
-      exe 'sp' file
-    endfor
-  else
-    exe 'edit' file
-  endif
+  exe 'edit' file
 endfunction
 
 function! s:exit_cb(job, st)
