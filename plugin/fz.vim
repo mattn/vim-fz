@@ -1,13 +1,26 @@
+function! s:done(...)
+  let files = getbufline(s:buf, 1, '$')
+  if len(files) == 0
+    call timer_start(10, function('s:done'))
+    return
+  endif
+  exe s:buf 'bwipe!'
+  if len(files) > 0
+    for file in files
+      exe 'sp' file
+    endfor
+  else
+    exe 'edit' file
+  endif
+endfunction
+
 function! s:exit_cb(job, st)
   if a:st != 0
     exe s:buf 'bwipe!'
     return
   endif
   call ch_close(job_getchannel(term_getjob(s:buf)))
-  redraw
-  let file = getbufline(s:buf, 1)[0]
-  exe s:buf 'bwipe!'
-  exe 'edit' file
+  call timer_start(10, function('s:done'))
 endfunction
 
 let s:fz_command = get(g:, 'fz_command', 'files -I FZ_IGNORE -A | gof')
