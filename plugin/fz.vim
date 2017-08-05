@@ -18,11 +18,18 @@ function! s:exit_cb(job, st)
   endif
 endfunction
 
+function! s:quote(arg)
+  if has('win32')
+    return '"' . substitute(a:arg, '"', '\"', 'g') . '"'
+  endif
+  return "'" . substitute(a:arg, "'", "\\'", 'g') . "'"
+endfunction
+
 let s:fz_command = get(g:, 'fz_command', 'files -I FZ_IGNORE -A | gof')
 function! s:fz()
   let $FZ_IGNORE = '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$'
   let s:tmp = tempname()
-  let s:buf = term_start(printf('%s %s %s > %s', &shell, &shellcmdflag, shellescape(s:fz_command), s:tmp), {'exit_cb': function('s:exit_cb')})
+  let s:buf = term_start(printf('%s %s %s > %s', &shell, &shellcmdflag, s:quote(s:fz_command), s:tmp), {'exit_cb': function('s:exit_cb')})
 endfunction
 
 command! Fz call s:fz()
