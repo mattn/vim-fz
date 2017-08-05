@@ -3,6 +3,7 @@ function! s:exit_cb(job, st)
     exe s:buf 'bwipe!'
     return
   endif
+  call ch_close(job_getchannel(term_getjob(s:buf)))
   let files = readfile(s:tmp)
   call delete(s:tmp)
   if len(files) == 0
