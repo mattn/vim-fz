@@ -32,7 +32,7 @@ $ go get github.com/mattn/gof
 *  [vim-plug](https://github.com/junegunn/vim-plug)
     * `Plug 'mattn/vim-fz'`
 *  [Vim packages](http://vimhelp.appspot.com/repeat.txt.html#packages)
-    * `git clone https://github.com/mattn/vim-fz.git ~/.vim/pack/plugins/start/vim-go`
+    * `git clone https://github.com/mattn/vim-fz.git ~/.vim/pack/plugins/start/vim-fz`
 
 ## License
 
