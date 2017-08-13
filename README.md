@@ -16,8 +16,7 @@ Or type `,f`
 
 ## Requirements
 
-* [files](https://github.com/mattn/files)
-* [gof](https://github.com/mattn/gof)
+* [fzf](https://github.com/junegunn/fzf) or [files](https://github.com/mattn/files) and [gof](https://github.com/mattn/gof)
 * vim8
 
 ## Installation
