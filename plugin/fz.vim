@@ -27,7 +27,12 @@ function! s:quote(arg)
   return "'" . substitute(a:arg, "'", "\\'", 'g') . "'"
 endfunction
 
-let s:fz_command = get(g:, 'fz_command', 'files -I FZ_IGNORE -A | gof')
+if executable('fzf')
+    let s:fz_command = get(g:, 'fz_command', 'fzf')
+else
+    let s:fz_command = get(g:, 'fz_command', 'files -I FZ_IGNORE -A | gof')
+endif
+
 function! s:fz()
   if !has('patch-8.0.928')
     echohl ErrorMsg | echo "vim-fz doesn't work on legacy vim" | echohl None
