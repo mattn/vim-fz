@@ -29,6 +29,10 @@ endfunction
 
 let s:fz_command = get(g:, 'fz_command', 'files -I FZ_IGNORE -A | gof')
 function! s:fz()
+  if !has('patch-8.0.928')
+    echohl ErrorMsg | echo "vim-fz doesn't work on legacy vim" | echohl None
+    return
+  endif
   let $FZ_IGNORE = '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$'
   let s:tmp = tempname()
   let s:buf = term_start(printf('%s %s %s > %s', &shell, &shellcmdflag, s:quote(s:fz_command), s:tmp), {'term_name': 'Fz', 'exit_cb': function('s:exit_cb')})
