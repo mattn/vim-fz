@@ -1,6 +1,6 @@
 # vim-fz
 
-Ultra Fast Fuzzy finder for Vim8.
+Ultra Fast Fuzzy finder for Vim8 and NeoVim.
 
 But very very experimental!
 
@@ -18,7 +18,7 @@ Or type `,f`
 
 * [files](https://github.com/mattn/files)
 * [gof](https://github.com/mattn/gof)
-* vim8
+* vim8 or neovim
 
 ## Installation
 
