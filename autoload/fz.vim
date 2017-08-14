@@ -16,7 +16,7 @@ function! s:exit_cb(job, st, ...) " neovim passes third argument as 'exit' while
     return
   endif
   if has_key(s:ctx, 'accept')
-    call call(s:ctx['accept'], files)
+    call call(s:ctx['accept'], { 'items': files })
   else
     if len(files) == 1
       exe 'edit' files[0]
