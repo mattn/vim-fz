@@ -47,8 +47,14 @@ function! fz#run(...)
     echohl ErrorMsg | echo "invalid argument" | echohl None
     return
   endif
-  let $FZ_IGNORE = get(s:ctx, 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
-  let fzcmd = get(s:ctx, 'cmd', s:fz_command)
+  let typ = get(s:ctx, 'type', 'cmd')
+  if typ == 'cmd'
+    let $FZ_IGNORE = get(s:ctx, 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
+    let fzcmd = get(s:ctx, 'cmd', s:fz_command)
+  else
+    echohl ErrorMsg | echo "unsupported type" | echohl None
+    return
+  endif
   let s:tmp = tempname()
   let cmd = printf('%s %s %s > %s', &shell, &shellcmdflag, s:quote(fzcmd), s:tmp)
   if s:is_nvim
