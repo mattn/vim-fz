@@ -15,12 +15,16 @@ function! s:exit_cb(job, st, ...) " neovim passes third argument as 'exit' while
   if len(files) == 0
     return
   endif
-  if len(files) == 1
-    exe 'edit' files[0]
+  if has_key(s:ctx, 'accept')
+    call call(s:ctx['accept'], files)
   else
-    for file in files
-      exe 'sp' file
-    endfor
+    if len(files) == 1
+      exe 'edit' files[0]
+    else
+      for file in files
+        exe 'sp' file
+      endfor
+    endif
   endif
 endfunction
 
@@ -33,19 +37,25 @@ endfunction
 
 let s:fz_command = get(g:, 'fz_command', 'files -I FZ_IGNORE -A | gof')
 
-function! fz#run()
+function! fz#run(...)
   if !s:is_nvim && !has('patch-8.0.928')
     echohl ErrorMsg | echo "vim-fz doesn't work on legacy vim" | echohl None
     return
   endif
-  let $FZ_IGNORE = '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$'
+  let s:ctx = get(a:000, 0, {})
+  if type(s:ctx) != 4
+    echohl ErrorMsg | echo "invalid argument" | echohl None
+    return
+  endif
+  let $FZ_IGNORE = get(s:ctx, 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
+  let fzcmd = get(s:ctx, 'cmd', s:fz_command)
   let s:tmp = tempname()
-  let cmd = printf('%s %s %s > %s', &shell, &shellcmdflag, s:quote(s:fz_command), s:tmp)
+  let cmd = printf('%s %s %s > %s', &shell, &shellcmdflag, s:quote(fzcmd), s:tmp)
   if s:is_nvim
-      botright new | resize 40
-      let s:buf = bufnr('%')
-      call termopen(cmd, { 'on_exit': function('s:exit_cb') }) | startinsert
+    botright new | resize 40
+    let s:buf = bufnr('%')
+    call termopen(cmd, {'on_exit': function('s:exit_cb')}) | startinsert
   else
-      let s:buf = term_start(cmd, {'term_name': 'Fz', 'exit_cb': function('s:exit_cb')})
+    let s:buf = term_start(cmd, {'term_name': 'Fz', 'exit_cb': function('s:exit_cb')})
   endif
 endfunction
