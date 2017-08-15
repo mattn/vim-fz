@@ -22,10 +22,14 @@ function! s:exit_cb(ctx, job, st, ...)
     call call(a:ctx['options']['accept'], { 'items': items })
   else
     if len(items) == 1
-      exe 'edit' items[0]
+      if filereadable(items[0])
+        exe 'edit' items[0]
+      endif
     else
       for item in items
-        exe 'sp' item
+        if filereadable(item)
+          exe 'sp' item
+        endif
       endfor
     endif
   endif
@@ -43,13 +47,19 @@ function! fz#run(...)
     echohl ErrorMsg | echo "vim-fz doesn't work on legacy vim" | echohl None
     return
   endif
+
+  " create context
   let ctx = {
     \ 'options': get(a:000, 0, {})
     \ }
+
+  " check argument
   if type(ctx['options']) != type({})
     echohl ErrorMsg | echo "invalid argument" | echohl None
     return
   endif
+
+  " check type
   let typ = get(ctx['options'], 'type', 'cmd')
   if typ == 'cmd'
     let $FZ_IGNORE = get(ctx['options'], 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
