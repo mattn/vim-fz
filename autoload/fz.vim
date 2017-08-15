@@ -1,28 +1,30 @@
 let s:is_nvim = has('nvim')
 
-function! s:exit_cb(job, st, ...) " neovim passes third argument as 'exit' while vim passes only 2 arguments
+" first argument is the ctx
+" neovim passes third argument as 'exit' while vim passes only 2 arguments
+function! s:exit_cb(ctx, job, st, ...)
   if a:st != 0
-    exe s:buf 'bwipe!'
-    call delete(s:tmp)
+    exe a:ctx['buf'] 'bwipe!'
+    call delete(a:ctx['tmp_result'])
     return
   endif
   if !s:is_nvim
-      silent! call ch_close(job_getchannel(term_getjob(s:buf)))
+      silent! call ch_close(job_getchannel(term_getjob(a:ctx['buf'])))
   endif
-  let files = readfile(s:tmp)
-  call delete(s:tmp)
-  exe s:buf 'bwipe!'
-  if len(files) == 0
+  let items = readfile(a:ctx['tmp_result'])
+  call delete(a:ctx['tmp_result'])
+  exe a:ctx['buf'] 'bwipe!'
+  if len(items) == 0
     return
   endif
-  if has_key(s:ctx, 'accept')
-    call call(s:ctx['accept'], { 'items': files })
+  if has_key(a:ctx['options'], 'accept')
+    call call(a:ctx['options']['accept'], { 'items': items })
   else
-    if len(files) == 1
-      exe 'edit' files[0]
+    if len(items) == 1
+      exe 'edit' items[0]
     else
-      for file in files
-        exe 'sp' file
+      for item in items
+        exe 'sp' item
       endfor
     endif
   endif
@@ -42,26 +44,28 @@ function! fz#run(...)
     echohl ErrorMsg | echo "vim-fz doesn't work on legacy vim" | echohl None
     return
   endif
-  let s:ctx = get(a:000, 0, {})
-  if type(s:ctx) != type({})
+  let ctx = {
+    \ 'options': get(a:000, 0, {})
+    \ }
+  if type(ctx['options']) != type({})
     echohl ErrorMsg | echo "invalid argument" | echohl None
     return
   endif
-  let typ = get(s:ctx, 'type', 'cmd')
+  let typ = get(ctx['options'], 'type', 'cmd')
   if typ == 'cmd'
-    let $FZ_IGNORE = get(s:ctx, 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
-    let fzcmd = get(s:ctx, 'cmd', s:fz_command)
+    let $FZ_IGNORE = get(ctx['options'], 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
+    let fzcmd = get(ctx['options'], 'cmd', s:fz_command)
   else
     echohl ErrorMsg | echo "unsupported type" | echohl None
     return
   endif
-  let s:tmp = tempname()
-  let cmd = printf('%s %s %s > %s', &shell, &shellcmdflag, s:quote(fzcmd), s:tmp)
+  let ctx['tmp_result'] = tempname()
+  let cmd = printf('%s %s %s > %s', &shell, &shellcmdflag, s:quote(fzcmd), ctx['tmp_result'])
+  botright new
+  let ctx['buf'] = bufnr('%')
   if s:is_nvim
-    botright new | resize 40
-    let s:buf = bufnr('%')
-    call termopen(cmd, {'on_exit': function('s:exit_cb')}) | startinsert
+    call termopen(cmd, {'on_exit': function('s:exit_cb', [ctx])}) | startinsert
   else
-    let s:buf = term_start(cmd, {'term_name': 'Fz', 'exit_cb': function('s:exit_cb')})
+    call term_start(cmd, {'term_name': 'Fz', 'curwin': ctx['buf'], 'exit_cb': function('s:exit_cb', [ctx])})
   endif
 endfunction
