@@ -43,7 +43,7 @@ function! fz#run(...)
     return
   endif
   let s:ctx = get(a:000, 0, {})
-  if type(s:ctx) != 4
+  if type(s:ctx) != type({})
     echohl ErrorMsg | echo "invalid argument" | echohl None
     return
   endif
