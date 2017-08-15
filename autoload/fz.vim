@@ -60,7 +60,7 @@ function! fz#run(...)
       echohl ErrorMsg | echo "invalid argument. 'file' required" | echohl None
       return
     endif
-    let fzcmd = printf('%s %s | %s', s:is_win ? 'type' : 'cat', s:quote(ctx['options']['file']), fz_command)
+    let fzcmd = printf('%s < %s', fz_command, s:quote(ctx['options']['file']))
   else
     echohl ErrorMsg | echo "unsupported type" | echohl None
     return
