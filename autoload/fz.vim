@@ -1,4 +1,5 @@
 let s:is_nvim = has('nvim')
+let s:is_win = has('win32') || has('win64')
 
 " first argument is the ctx
 " neovim passes third argument as 'exit' while vim passes only 2 arguments
@@ -31,13 +32,11 @@ function! s:exit_cb(ctx, job, st, ...)
 endfunction
 
 function! s:quote(arg)
-  if has('win32')
-    return '"' . substitute(a:arg, '"', '\"', 'g') . '"'
+  if s:is_win
+    return '"' . substitute(substitute(a:arg, '/', '\\', 'g'), '"', '\"', 'g') . '"'
   endif
   return "'" . substitute(a:arg, "'", "\\'", 'g') . "'"
 endfunction
-
-let s:fz_command = get(g:, 'fz_command', 'files -I FZ_IGNORE -A | gof')
 
 function! fz#run(...)
   if !s:is_nvim && !has('patch-8.0.928')
@@ -54,7 +53,14 @@ function! fz#run(...)
   let typ = get(ctx['options'], 'type', 'cmd')
   if typ == 'cmd'
     let $FZ_IGNORE = get(ctx['options'], 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
-    let fzcmd = get(ctx['options'], 'cmd', s:fz_command)
+    let fzcmd = get(ctx['options'], 'cmd', empty(g:fz_command_files) ? g:fz_command : printf('%s | %s', g:fz_command_files, g:fz_command))
+  elseif typ == 'file'
+    let fz_command = get(ctx['options'], 'fz_command', g:fz_command)
+    if !has_key(ctx['options'], 'file')
+      echohl ErrorMsg | echo "invalid argument. 'file' required" | echohl None
+      return
+    endif
+    let fzcmd = printf('%s %s | %s', s:is_win ? 'type' : 'cat', s:quote(ctx['options']['file']), fz_command)
   else
     echohl ErrorMsg | echo "unsupported type" | echohl None
     return
