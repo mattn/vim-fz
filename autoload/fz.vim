@@ -4,6 +4,9 @@ let s:is_win = has('win32') || has('win64')
 " first argument is the ctx
 " neovim passes third argument as 'exit' while vim passes only 2 arguments
 function! s:exit_cb(ctx, job, st, ...)
+  if has_key(a:ctx, 'tmp_input')
+    call delete(a:ctx['tmp_input'])
+  endif
   if a:st != 0
     exe a:ctx['buf'] 'bwipe!'
     call delete(a:ctx['tmp_result'])
@@ -19,7 +22,7 @@ function! s:exit_cb(ctx, job, st, ...)
     return
   endif
   if has_key(a:ctx['options'], 'accept')
-    call call(a:ctx['options']['accept'], { 'items': items })
+    call a:ctx['options']['accept']({ 'items': items })
   else
     if len(items) == 1
       if filereadable(items[0])
@@ -40,6 +43,11 @@ function! s:quote(arg)
     return '"' . substitute(substitute(a:arg, '/', '\\', 'g'), '"', '\"', 'g') . '"'
   endif
   return "'" . substitute(a:arg, "'", "\\'", 'g') . "'"
+endfunction
+
+function! s:get_redirect_cmd(ctx, file)
+  let fz_command = get(a:ctx['options'], 'fz_command', g:fz_command)
+  return printf('%s < %s', fz_command, s:quote(a:file))
 endfunction
 
 function! fz#run(...)
@@ -65,12 +73,23 @@ function! fz#run(...)
     let $FZ_IGNORE = get(ctx['options'], 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
     let fzcmd = get(ctx['options'], 'cmd', empty(g:fz_command_files) ? g:fz_command : printf('%s | %s', g:fz_command_files, g:fz_command))
   elseif typ == 'file'
-    let fz_command = get(ctx['options'], 'fz_command', g:fz_command)
     if !has_key(ctx['options'], 'file')
-      echohl ErrorMsg | echo "invalid argument. 'file' required" | echohl None
+      echohl ErrorMsg | echo "invalid argument. 'file' required." | echohl None
       return
     endif
-    let fzcmd = printf('%s < %s', fz_command, s:quote(ctx['options']['file']))
+    let fzcmd = s:get_redirect_cmd(ctx, ctx['options']['file'])
+  elseif typ == 'list'
+    if !has_key(ctx['options'], 'list')
+      echohl ErrorMsg | echo "invalid argument. 'list' required." | echohl None
+      return
+    endif
+    if type(ctx['options']['list']) != type([])
+      echohl ErrorMsg | echo "invalid argument 'list'." | echohl None
+      return
+    endif
+    let ctx['tmp_input'] = tempname()
+    call writefile(ctx['options']['list'], ctx['tmp_input'])
+    let fzcmd = s:get_redirect_cmd(ctx, ctx['tmp_input'])
   else
     echohl ErrorMsg | echo "unsupported type" | echohl None
     return
