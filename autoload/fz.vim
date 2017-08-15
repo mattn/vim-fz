@@ -37,8 +37,6 @@ function! s:quote(arg)
   return "'" . substitute(a:arg, "'", "\\'", 'g') . "'"
 endfunction
 
-let s:fz_command = get(g:, 'fz_command', 'files -I FZ_IGNORE -A | gof')
-
 function! fz#run(...)
   if !s:is_nvim && !has('patch-8.0.928')
     echohl ErrorMsg | echo "vim-fz doesn't work on legacy vim" | echohl None
@@ -54,7 +52,7 @@ function! fz#run(...)
   let typ = get(ctx['options'], 'type', 'cmd')
   if typ == 'cmd'
     let $FZ_IGNORE = get(ctx['options'], 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
-    let fzcmd = get(ctx['options'], 'cmd', s:fz_command)
+    let fzcmd = get(ctx['options'], 'cmd', empty(g:fz_command_files) ? g:fz_command : printf('%s | %s', g:fz_command_files, g:fz_command))
   else
     echohl ErrorMsg | echo "unsupported type" | echohl None
     return
