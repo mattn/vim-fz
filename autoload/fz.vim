@@ -22,16 +22,35 @@ function! s:exit_cb(ctx, job, st, ...)
     return
   endif
   if has_key(a:ctx['options'], 'accept')
-    call a:ctx['options']['accept']({ 'items': items })
+    let params = {}
+    if has_key(a:ctx, 'actions')
+        let params['actions'] = a:ctx['actions']
+        let params['action'] = params['actions'][items[0]]
+        let params['items'] = items[1:]
+    else
+        let params['items'] = items
+    endif
+    call a:ctx['options']['accept'](params)
   else
-    if len(items) == 1
+    if has_key(a:ctx, 'actions')
+        let action = items[0]
+        let items = items[1:]
+    else
+        let action = ''
+    endif
+
+    if len(items) == 1 && action == ''
       if filereadable(items[0])
         exe 'edit' items[0]
       endif
     else
       for item in items
         if filereadable(item)
-          exe 'sp' item
+          if action == ''
+              exe 'sp' item
+          else
+              exe a:ctx['actions'][action] . ' ' . item
+          endif
         endif
       endfor
     endif
@@ -47,7 +66,18 @@ endfunction
 
 function! s:get_redirect_cmd(ctx, file)
   let fz_command = get(a:ctx['options'], 'fz_command', g:fz_command)
-  return printf('%s < %s', fz_command, s:quote(a:file))
+  return printf('%s%s < %s', fz_command, s:get_fzcmd_options(a:ctx), s:quote(a:file))
+endfunction
+
+function! s:get_fzcmd_options(ctx)
+  " should include empty space if it contains options
+  let actions = get(a:ctx['options'], 'actions', g:fz_command_actions)
+  if !empty(actions)
+    let options_action = get(a:ctx['options'], 'options_action', g:fz_command_options_action)
+    let a:ctx['actions'] = actions
+    return ' ' . printf(options_action, join(keys(actions), ','))
+  endif
+  return ''
 endfunction
 
 function! fz#run(...)
@@ -71,7 +101,9 @@ function! fz#run(...)
   let typ = get(ctx['options'], 'type', 'cmd')
   if typ == 'cmd'
     let $FZ_IGNORE = get(ctx['options'], 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
-    let fzcmd = get(ctx['options'], 'cmd', empty(g:fz_command_files) ? g:fz_command : printf('%s | %s', g:fz_command_files, g:fz_command))
+    let fz_command = get(ctx['options'], 'fz_command', g:fz_command)
+    let cmd = get(ctx['options'], 'cmd', g:fz_command_files)
+    let fzcmd = empty(cmd) ? printf('%s%s', g:fz_command, s:get_fzcmd_options(ctx)) : printf('%s | %s%s', cmd, fz_command, s:get_fzcmd_options(ctx))
   elseif typ == 'file'
     if !has_key(ctx['options'], 'file')
       echohl ErrorMsg | echo "invalid argument. 'file' required." | echohl None
