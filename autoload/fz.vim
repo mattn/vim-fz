@@ -25,7 +25,11 @@ function! s:exit_cb(ctx, job, st, ...)
     let params = {}
     if has_key(a:ctx, 'actions')
         let params['actions'] = a:ctx['actions']
-        let params['action'] = params['actions'][items[0]]
+        if has_key(params['actions'], items[0])
+            let params['action'] = params['actions'][items[0]]
+        else
+            let params['action'] = items[0]
+        endif
         let params['items'] = items[1:]
     else
         let params['items'] = items
