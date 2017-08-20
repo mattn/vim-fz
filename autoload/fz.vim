@@ -13,7 +13,7 @@ function! s:exit_cb(ctx, job, st, ...)
     return
   endif
   if !s:is_nvim
-      silent! call ch_close(job_getchannel(term_getjob(a:ctx['buf'])))
+    silent! call ch_close(job_getchannel(term_getjob(a:ctx['buf'])))
   endif
   let items = readfile(a:ctx['tmp_result'])
   call delete(a:ctx['tmp_result'])
@@ -24,23 +24,23 @@ function! s:exit_cb(ctx, job, st, ...)
   if has_key(a:ctx['options'], 'accept')
     let params = {}
     if has_key(a:ctx, 'actions')
-        let params['actions'] = a:ctx['actions']
-        if has_key(params['actions'], items[0])
-            let params['action'] = params['actions'][items[0]]
-        else
-            let params['action'] = items[0]
-        endif
-        let params['items'] = items[1:]
+      let params['actions'] = a:ctx['actions']
+      if has_key(params['actions'], items[0])
+        let params['action'] = params['actions'][items[0]]
+      else
+        let params['action'] = items[0]
+      endif
+      let params['items'] = items[1:]
     else
-        let params['items'] = items
+      let params['items'] = items
     endif
     call a:ctx['options']['accept'](params)
   else
     if has_key(a:ctx, 'actions')
-        let action = items[0]
-        let items = items[1:]
+      let action = items[0]
+      let items = items[1:]
     else
-        let action = ''
+      let action = ''
     endif
 
     if len(items) == 1 && action == ''
@@ -51,9 +51,9 @@ function! s:exit_cb(ctx, job, st, ...)
       for item in items
         if filereadable(item)
           if action == ''
-              exe 'sp' item
+            exe 'sp' item
           else
-              exe a:ctx['actions'][action] . ' ' . item
+            exe a:ctx['actions'][action] . ' ' . item
           endif
         endif
       endfor
