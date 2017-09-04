@@ -131,7 +131,7 @@ function! fz#run(...)
     return
   endif
   let ctx['tmp_result'] = tempname()
-  let cmd = printf('%s %s %s > %s', &shell, &shellcmdflag, s:quote(fzcmd), ctx['tmp_result'])
+  let cmd = [&shell, &shellcmdflag, printf('%s > %s', fzcmd, ctx['tmp_result'])]
   botright new
   let ctx['buf'] = bufnr('%')
   if s:is_nvim
