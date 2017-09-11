@@ -1,6 +1,12 @@
 let s:is_nvim = has('nvim')
 let s:is_win = has('win32') || has('win64')
 
+function! s:wipe(ctx)
+  if buflisted(a:ctx['buf'] )
+    exe a:ctx['buf'] 'bwipe!'
+  endif
+endfunction
+
 " first argument is the ctx
 " neovim passes third argument as 'exit' while vim passes only 2 arguments
 function! s:exit_cb(ctx, job, st, ...)
@@ -8,7 +14,7 @@ function! s:exit_cb(ctx, job, st, ...)
     call delete(a:ctx['tmp_input'])
   endif
   if a:st != 0
-    exe a:ctx['buf'] 'bwipe!'
+    call s:wipe(a:ctx)
     call delete(a:ctx['tmp_result'])
     return
   endif
@@ -17,7 +23,7 @@ function! s:exit_cb(ctx, job, st, ...)
   endif
   let items = readfile(a:ctx['tmp_result'])
   call delete(a:ctx['tmp_result'])
-  exe a:ctx['buf'] 'bwipe!'
+  call s:wipe(a:ctx)
   if len(items) == 0
     return
   endif
