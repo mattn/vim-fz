@@ -13,7 +13,7 @@ let g:fz_command_actions = {
   \ 'ctrl-v': 'vsplit'
   \ }
 
-command! -nargs=* -complete=dir Fz call fz#run({}, <q-args>)
+command! -nargs=* -complete=dir Fz call fz#run({'basepath': <q-args>})
 nnoremap <Plug>(fz) :<c-u>Fz<cr>
 if !hasmapto('<Plug>(fz)')
   nmap ,f <Plug>(fz)

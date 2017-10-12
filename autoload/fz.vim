@@ -107,7 +107,8 @@ function! fz#run(...)
     return
   endif
 
-  let basepath = get(a:000, 1, '')
+  " Get basepath
+  let basepath = get(ctx['options'], 'basepath', '')
   if basepath != ''
     let basepath = expand(basepath)
   endif
