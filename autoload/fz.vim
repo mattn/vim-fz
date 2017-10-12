@@ -108,10 +108,7 @@ function! fz#run(...)
   endif
 
   " Get basepath
-  let basepath = get(ctx['options'], 'basepath', '')
-  if basepath != ''
-    let basepath = expand(basepath)
-  endif
+  let basepath = expand(get(ctx['options'], 'basepath', '.'))
 
   " check type
   let typ = get(ctx['options'], 'type', 'cmd')
@@ -119,7 +116,7 @@ function! fz#run(...)
     let $FZ_IGNORE = get(ctx['options'], 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
     let fz_command = get(ctx['options'], 'fz_command', g:fz_command)
     let cmd = get(ctx['options'], 'cmd', g:fz_command_files)
-    let cmd = isdirectory(basepath) ? printf(cmd, basepath) : printf(cmd, '')
+    let cmd = printf(cmd, basepath)
     let fzcmd = empty(cmd) ? printf('%s%s', g:fz_command, s:get_fzcmd_options(ctx)) : printf('%s | %s%s', cmd, fz_command, s:get_fzcmd_options(ctx))
   elseif typ == 'file'
     if !has_key(ctx['options'], 'file')
