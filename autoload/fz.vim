@@ -84,6 +84,9 @@ function! s:get_fzcmd_options(ctx)
   let actions = get(a:ctx['options'], 'actions', g:fz_command_actions)
   if !empty(actions)
     let options_action = get(a:ctx['options'], 'options_action', g:fz_command_options_action)
+    if options_action == ''
+      return ''
+    endif
     let a:ctx['actions'] = actions
     return ' ' . printf(options_action, join(keys(actions), ','))
   endif
