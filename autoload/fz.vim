@@ -119,7 +119,7 @@ function! fz#run(...)
     let $FZ_IGNORE = get(ctx['options'], 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
     let fz_command = get(ctx['options'], 'fz_command', g:fz_command)
     let cmd = get(ctx['options'], 'cmd', g:fz_command_files)
-    if !empty(cmd)
+    if match(cmd, '%s') > -1
         let cmd = printf(cmd, basepath)
     endif
     let fzcmd = empty(cmd) ? printf('%s%s', g:fz_command, s:get_fzcmd_options(ctx)) : printf('%s | %s%s', cmd, fz_command, s:get_fzcmd_options(ctx))
