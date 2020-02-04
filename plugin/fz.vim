@@ -14,7 +14,10 @@ let g:fz_command_actions = {
   \ }
 
 command! -nargs=* -complete=dir Fz call fz#run({'basepath': <q-args>})
+command! -nargs=* -complete=dir FzMRU call fz#run({'basepath': <q-args>, 'type': 'list', 'list': map(split(execute('oldfiles'), '\n'), {k,v->fnamemodify(expand(matchstr(v:val, '^\d\+: \zs.*')), ':~')})})
 nnoremap <Plug>(fz) :<c-u>Fz<cr>
+nnoremap <Plug>(fz-mru) :<c-u>FzMRU<cr>
 if !hasmapto('<Plug>(fz)')
   nmap ,f <Plug>(fz)
+  nmap ,, <Plug>(fz-mru)
 endif
