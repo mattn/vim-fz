@@ -55,7 +55,7 @@ function! s:exit_cb(ctx, job, st, ...)
       endif
     else
       for item in items
-        if filereadable(item)
+        if filereadable(expand(item))
           if action == ''
             exe 'sp' item
           else
