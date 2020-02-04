@@ -10,7 +10,7 @@ endfunction
 " first argument is the ctx
 " neovim passes third argument as 'exit' while vim passes only 2 arguments
 function! s:exit_cb(ctx, job, st, ...)
-  if has_key(a:ctx, 'tmp_input')
+  if has_key(a:ctx, 'tmp_input') && !has_key(a:ctx, 'file')
     call delete(a:ctx['tmp_input'])
   endif
   if a:st != 0
@@ -67,18 +67,6 @@ function! s:exit_cb(ctx, job, st, ...)
   endif
 endfunction
 
-function! s:quote(arg)
-  if s:is_win
-    return '"' . substitute(substitute(a:arg, '/', '\\', 'g'), '"', '\"', 'g') . '"'
-  endif
-  return "'" . substitute(a:arg, "'", "\\'", 'g') . "'"
-endfunction
-
-function! s:get_redirect_cmd(ctx, file)
-  let fz_command = get(a:ctx['options'], 'fz_command', g:fz_command)
-  return printf('%s%s < %s', fz_command, s:get_fzcmd_options(a:ctx), s:quote(a:file))
-endfunction
-
 function! s:get_fzcmd_options(ctx)
   " should include empty space if it contains options
   let actions = get(a:ctx['options'], 'actions', g:fz_command_actions)
@@ -128,7 +116,8 @@ function! fz#run(...)
       echohl ErrorMsg | echo "invalid argument. 'file' required." | echohl None
       return
     endif
-    let fzcmd = s:get_redirect_cmd(ctx, ctx['options']['file'])
+    call writefile(ctx['options']['list'], ctx['tmp_input'])
+    let ctx['tmp_input'] = ctx['options']['file']
   elseif typ == 'list'
     if !has_key(ctx['options'], 'list')
       echohl ErrorMsg | echo "invalid argument. 'list' required." | echohl None
@@ -140,13 +129,18 @@ function! fz#run(...)
     endif
     let ctx['tmp_input'] = tempname()
     call writefile(ctx['options']['list'], ctx['tmp_input'])
-    let fzcmd = s:get_redirect_cmd(ctx, ctx['tmp_input'])
   else
     echohl ErrorMsg | echo "unsupported type" | echohl None
     return
   endif
   let ctx['tmp_result'] = tempname()
-  let cmd = [&shell, &shellcmdflag, printf('%s > %s', fzcmd, ctx['tmp_result'])]
+  let fz_command = get(ctx['options'], 'fz_command', g:fz_command)
+  let fz_options = s:get_fzcmd_options(ctx)
+  if has_key(ctx, 'tmp_input')
+    let cmd = [&shell, &shellcmdflag, printf('%s%s > %s < %s', fz_command, fz_options, ctx['tmp_result'], ctx['tmp_input'])]
+  else
+    let cmd = [&shell, &shellcmdflag, printf('%s%s > %s', fz_command, fz_options, ctx['tmp_result'])]
+  endif
   botright new
   let ctx['buf'] = bufnr('%')
   if s:is_nvim
