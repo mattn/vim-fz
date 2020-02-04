@@ -50,7 +50,7 @@ function! s:exit_cb(ctx, job, st, ...)
     endif
 
     if len(items) == 1 && action == ''
-      if filereadable(items[0])
+      if filereadable(expand(items[0]))
         exe 'edit' items[0]
       endif
     else
