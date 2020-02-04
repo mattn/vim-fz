@@ -137,7 +137,11 @@ function! fz#run(...)
   let fz_command = get(ctx['options'], 'fz_command', g:fz_command)
   let fz_options = s:get_fzcmd_options(ctx)
   if has_key(ctx, 'tmp_input')
-    let cmd = [&shell, &shellcmdflag, printf('%s%s > %s < %s', fz_command, fz_options, ctx['tmp_result'], ctx['tmp_input'])]
+    if s:is_win
+      let cmd = printf('%s %s "%s%s <%s >%s"', &shell, &shellcmdflag, fz_command, fz_options, ctx['tmp_input'], ctx['tmp_result'])
+    else
+      let cmd = [&shell, &shellcmdflag, printf('%s%s > %s < %s', fz_command, fz_options, ctx['tmp_result'], ctx['tmp_input'])]
+    endif
   else
     let cmd = [&shell, &shellcmdflag, printf('%s%s > %s', fz_command, fz_options, ctx['tmp_result'])]
   endif
