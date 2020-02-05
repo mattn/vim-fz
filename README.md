@@ -16,14 +16,12 @@ Or type `,f`
 
 ## Requirements
 
-* [files](https://github.com/mattn/files)
 * [gof](https://github.com/mattn/gof)
 * vim8 or neovim
 
 ## Installation
 
 ```
-$ go get github.com/mattn/files
 $ go get github.com/mattn/gof
 ```
 
