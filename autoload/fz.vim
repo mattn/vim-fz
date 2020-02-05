@@ -150,6 +150,6 @@ function! fz#run(...)
   if s:is_nvim
     call termopen(cmd, {'on_exit': function('s:exit_cb', [ctx])}) | startinsert
   else
-    call term_start(cmd, {'term_name': 'Fz', 'curwin': ctx['buf'], 'exit_cb': function('s:exit_cb', [ctx])})
+    call term_start(cmd, {'term_name': 'Fz', 'curwin': ctx['buf'], 'exit_cb': function('s:exit_cb', [ctx]), 'tty_type': 'conpty'})
   endif
 endfunction
