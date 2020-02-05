@@ -51,7 +51,15 @@ function! s:exit_cb(ctx, job, st, ...) abort
 
     if len(l:items) == 1 && l:action == ''
       if filereadable(expand(l:items[0]))
-        exe 'edit' l:items[0]
+        if &modified
+          if winwidth(win_getid()) > winheight(win_getid()) * 3
+            exe 'vsplit' l:items[0]
+          else
+            exe 'split' l:items[0]
+          endif
+        else
+          exe 'edit' l:items[0]
+        endif
       endif
     else
       for l:item in l:items
