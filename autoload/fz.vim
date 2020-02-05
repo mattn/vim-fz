@@ -119,9 +119,7 @@ function! fz#run(...)
   " check type
   let l:typ = get(l:ctx['options'], 'type', 'cmd')
   if l:typ ==# 'cmd'
-    let $FZ_IGNORE = get(l:ctx['options'], 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
     let l:fz_command = get(l:ctx['options'], 'fz_command', g:fz_command)
-    let l:cmd = get(l:ctx['options'], 'cmd', g:fz_command_files)
   elseif l:typ ==# 'file'
     if !has_key(l:ctx['options'], 'file')
       echohl ErrorMsg | echo "invalid argument. 'file' required." | echohl None

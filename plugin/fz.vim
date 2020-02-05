@@ -4,7 +4,6 @@ endif
 let g:fz_loaded = 1
 
 let g:fz_command = get(g:, 'fz_command', 'gof')
-let g:fz_command_files = get(g:, 'fz_command_files', 'files %s -I FZ_IGNORE -A')
 let g:fz_command_options_action = get(g:, 'fz_command_options_action', '-a=%s')
 let g:fz_command_actions = {
   \ 'ctrl-o': 'edit',
