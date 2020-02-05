@@ -9,7 +9,7 @@ endfunction
 
 " first argument is the ctx
 " neovim passes third argument as 'exit' while vim passes only 2 arguments
-function! s:exit_cb(ctx, job, st, ...)
+function! s:exit_cb(ctx, job, st, ...) abort
   if has_key(a:ctx, 'tmp_input') && !has_key(a:ctx, 'file')
     call delete(a:ctx['tmp_input'])
   endif
@@ -21,45 +21,45 @@ function! s:exit_cb(ctx, job, st, ...)
   if !s:is_nvim
     silent! call ch_close(job_getchannel(term_getjob(a:ctx['buf'])))
   endif
-  let items = readfile(a:ctx['tmp_result'])
+  let l:items = readfile(a:ctx['tmp_result'])
   call delete(a:ctx['tmp_result'])
   call s:wipe(a:ctx)
-  if len(items) == 0
+  if len(l:items) == 0
     return
   endif
   if has_key(a:ctx['options'], 'accept')
-    let params = {}
+    let l:params = {}
     if has_key(a:ctx, 'actions')
-      let params['actions'] = a:ctx['actions']
-      if has_key(params['actions'], items[0])
-        let params['action'] = params['actions'][items[0]]
+      let l:params['actions'] = a:ctx['actions']
+      if has_key(l:params['actions'], l:items[0])
+        let l:params['action'] = l:params['actions'][l:items[0]]
       else
-        let params['action'] = items[0]
+        let l:params['action'] = l:items[0]
       endif
-      let params['items'] = items[1:]
+      let l:params['items'] = l:items[1:]
     else
-      let params['items'] = items
+      let l:params['items'] = l:items
     endif
-    call a:ctx['options']['accept'](params)
+    call a:ctx['options']['accept'](l:params)
   else
     if has_key(a:ctx, 'actions')
-      let action = items[0]
-      let items = items[1:]
+      let l:action = l:items[0]
+      let l:items = l:items[1:]
     else
-      let action = ''
+      let l:action = ''
     endif
 
-    if len(items) == 1 && action == ''
-      if filereadable(expand(items[0]))
-        exe 'edit' items[0]
+    if len(l:items) == 1 && l:action == ''
+      if filereadable(expand(l:items[0]))
+        exe 'edit' l:items[0]
       endif
     else
-      for item in items
-        if filereadable(expand(item))
-          if action == ''
-            exe 'sp' item
+      for l:item in l:items
+        if filereadable(expand(l:item))
+          if l:action == ''
+            exe 'sp' l:item
           else
-            exe a:ctx['actions'][action] . ' ' . item
+            exe a:ctx['actions'][l:action] . ' ' . l:item
           endif
         endif
       endfor
@@ -67,16 +67,16 @@ function! s:exit_cb(ctx, job, st, ...)
   endif
 endfunction
 
-function! s:get_fzcmd_options(ctx)
+function! s:get_fzcmd_options(ctx) abort
   " should include empty space if it contains options
-  let actions = get(a:ctx['options'], 'actions', g:fz_command_actions)
-  if !empty(actions)
-    let options_action = get(a:ctx['options'], 'options_action', g:fz_command_options_action)
-    if options_action == ''
+  let l:actions = get(a:ctx['options'], 'actions', g:fz_command_actions)
+  if !empty(l:actions)
+    let l:options_action = get(a:ctx['options'], 'options_action', g:fz_command_options_action)
+    if l:options_action == ''
       return ''
     endif
-    let a:ctx['actions'] = actions
-    return ' ' . printf(options_action, join(keys(actions), ','))
+    let a:ctx['actions'] = l:actions
+    return ' ' . printf(l:options_action, join(keys(l:actions), ','))
   endif
   return ''
 endfunction
@@ -88,68 +88,68 @@ function! fz#run(...)
   endif
 
   " create context
-  let ctx = {
+  let l:ctx = {
     \ 'options': get(a:000, 0, {})
     \ }
 
   " check argument
-  if type(ctx['options']) != type({})
-    echohl ErrorMsg | echo "invalid argument" | echohl None
+  if type(l:ctx['options']) != type({})
+    echohl ErrorMsg | echo 'invalid argument' | echohl None
     return
   endif
 
   " Get basepath
-  let basepath = expand(get(ctx['options'], 'basepath', '.'))
+  let l:basepath = get(l:ctx['options'], 'basepath', '')
+  if empty(l:basepath)
+    let l:basepath = '.'
+  endif
+  let l:basepath = expand(l:basepath)
 
   " check type
-  let typ = get(ctx['options'], 'type', 'cmd')
-  if typ == 'cmd'
-    let $FZ_IGNORE = get(ctx['options'], 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
-    let fz_command = get(ctx['options'], 'fz_command', g:fz_command)
-    let cmd = get(ctx['options'], 'cmd', g:fz_command_files)
-    if match(cmd, '%s') > -1
-        let cmd = printf(cmd, basepath)
-    endif
-    let fzcmd = empty(cmd) ? printf('%s%s', g:fz_command, s:get_fzcmd_options(ctx)) : printf('%s | %s%s', cmd, fz_command, s:get_fzcmd_options(ctx))
-  elseif typ == 'file'
-    if !has_key(ctx['options'], 'file')
+  let l:typ = get(l:ctx['options'], 'type', 'cmd')
+  if l:typ ==# 'cmd'
+    let $FZ_IGNORE = get(l:ctx['options'], 'ignore', '(^|[\/])(\.git|\.hg|\.svn|\.settings|\.gitkeep|target|bin|node_modules|\.idea|^vendor)$|\.(exe|so|dll|png|obj|o|idb|pdb)$')
+    let l:fz_command = get(l:ctx['options'], 'fz_command', g:fz_command)
+    let l:cmd = get(l:ctx['options'], 'cmd', g:fz_command_files)
+  elseif l:typ ==# 'file'
+    if !has_key(l:ctx['options'], 'file')
       echohl ErrorMsg | echo "invalid argument. 'file' required." | echohl None
       return
     endif
-    call writefile(ctx['options']['list'], ctx['tmp_input'])
-    let ctx['tmp_input'] = ctx['options']['file']
-  elseif typ == 'list'
-    if !has_key(ctx['options'], 'list')
+    call writefile(l:ctx['options']['list'], l:ctx['tmp_input'])
+    let l:ctx['tmp_input'] = l:ctx['options']['file']
+  elseif l:typ ==# 'list'
+    if !has_key(l:ctx['options'], 'list')
       echohl ErrorMsg | echo "invalid argument. 'list' required." | echohl None
       return
     endif
-    if type(ctx['options']['list']) != type([])
+    if type(l:ctx['options']['list']) != type([])
       echohl ErrorMsg | echo "invalid argument 'list'." | echohl None
       return
     endif
-    let ctx['tmp_input'] = tempname()
-    call writefile(ctx['options']['list'], ctx['tmp_input'])
+    let l:ctx['tmp_input'] = tempname()
+    call writefile(l:ctx['options']['list'], l:ctx['tmp_input'])
   else
-    echohl ErrorMsg | echo "unsupported type" | echohl None
+    echohl ErrorMsg | echo 'unsupported type' | echohl None
     return
   endif
-  let ctx['tmp_result'] = tempname()
-  let fz_command = get(ctx['options'], 'fz_command', g:fz_command)
-  let fz_options = s:get_fzcmd_options(ctx)
-  if has_key(ctx, 'tmp_input')
+  let l:ctx['tmp_result'] = tempname()
+  let l:fz_command = get(l:ctx['options'], 'fz_command', g:fz_command)
+  let l:fz_options = s:get_fzcmd_options(l:ctx)
+  if has_key(l:ctx, 'tmp_input')
     if s:is_win
-      let cmd = printf('%s %s "%s%s <%s >%s"', &shell, &shellcmdflag, fz_command, fz_options, ctx['tmp_input'], ctx['tmp_result'])
+      let l:cmd = printf('%s %s "%s%s <%s >%s"', &shell, &shellcmdflag, l:fz_command, l:fz_options, l:ctx['tmp_input'], l:ctx['tmp_result'])
     else
-      let cmd = [&shell, &shellcmdflag, printf('%s%s > %s < %s', fz_command, fz_options, ctx['tmp_result'], ctx['tmp_input'])]
+      let l:cmd = [&shell, &shellcmdflag, printf('%s%s > %s < %s', l:fz_command, l:fz_options, l:ctx['tmp_result'], l:ctx['tmp_input'])]
     endif
   else
-    let cmd = [&shell, &shellcmdflag, printf('%s%s > %s', fz_command, fz_options, ctx['tmp_result'])]
+    let l:cmd = [&shell, &shellcmdflag, printf('%s%s > %s', l:fz_command, l:fz_options, l:ctx['tmp_result'])]
   endif
   botright new
-  let ctx['buf'] = bufnr('%')
+  let l:ctx['buf'] = bufnr('%')
   if s:is_nvim
-    call termopen(cmd, {'on_exit': function('s:exit_cb', [ctx])}) | startinsert
+    call termopen(l:cmd, {'on_exit': function('s:exit_cb', [l:ctx]), 'cwd': l:basepath}) | startinsert
   else
-    call term_start(cmd, {'term_name': 'Fz', 'curwin': ctx['buf'], 'exit_cb': function('s:exit_cb', [ctx]), 'tty_type': 'conpty'})
+    call term_start(l:cmd, {'term_name': 'Fz', 'curwin': l:ctx['buf'], 'exit_cb': function('s:exit_cb', [l:ctx]), 'tty_type': 'conpty', 'cwd': l:basepath})
   endif
 endfunction
