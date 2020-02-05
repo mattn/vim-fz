@@ -50,24 +50,26 @@ function! s:exit_cb(ctx, job, st, ...) abort
     endif
 
     if len(l:items) == 1 && l:action == ''
-      if filereadable(expand(l:items[0]))
+      let l:path = a:ctx.basepath . '/' . l:items[0]
+      if filereadable(expand(l:path))
         if &modified
           if winwidth(win_getid()) > winheight(win_getid()) * 3
-            exe 'vsplit' l:items[0]
+            exe 'vsplit' l:path
           else
-            exe 'split' l:items[0]
+            exe 'split' l:path
           endif
         else
-          exe 'edit' l:items[0]
+          exe 'edit' l:path
         endif
       endif
     else
       for l:item in l:items
-        if filereadable(expand(l:item))
+        let l:path = a:ctx.basepath . '/' . l:item
+        if filereadable(expand(l:path))
           if l:action == ''
-            exe 'sp' l:item
+            exe 'sp' l:path
           else
-            exe a:ctx['actions'][l:action] . ' ' . l:item
+            exe a:ctx['actions'][l:action] . ' ' . l:path
           endif
         endif
       endfor
@@ -97,7 +99,8 @@ function! fz#run(...)
 
   " create context
   let l:ctx = {
-    \ 'options': get(a:000, 0, {})
+    \ 'options': get(a:000, 0, {}),
+    \ 'basepath': ''
     \ }
 
   " check argument
@@ -111,7 +114,7 @@ function! fz#run(...)
   if empty(l:basepath)
     let l:basepath = '.'
   endif
-  let l:basepath = expand(l:basepath)
+  let l:ctx['basepath'] = expand(l:basepath)
 
   " check type
   let l:typ = get(l:ctx['options'], 'type', 'cmd')
@@ -156,8 +159,8 @@ function! fz#run(...)
   botright new
   let l:ctx['buf'] = bufnr('%')
   if s:is_nvim
-    call termopen(l:cmd, {'on_exit': function('s:exit_cb', [l:ctx]), 'cwd': l:basepath}) | startinsert
+    call termopen(l:cmd, {'on_exit': function('s:exit_cb', [l:ctx]), 'cwd': l:ctx['basepath']}) | startinsert
   else
-    call term_start(l:cmd, {'term_name': 'Fz', 'curwin': l:ctx['buf'], 'exit_cb': function('s:exit_cb', [l:ctx]), 'tty_type': 'conpty', 'cwd': l:basepath})
+    call term_start(l:cmd, {'term_name': 'Fz', 'curwin': l:ctx['buf'], 'exit_cb': function('s:exit_cb', [l:ctx]), 'tty_type': 'conpty', 'cwd': l:ctx['basepath']})
   endif
 endfunction
