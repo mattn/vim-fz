@@ -1,6 +1,13 @@
 let s:is_nvim = has('nvim')
 let s:is_win = has('win32') || has('win64')
 
+function! s:relative_path(path)
+  if has('win32')
+    return a:path =~# '^\([/\]\|\w:[/\]\)'
+  endif
+  return a:path =~# '^/'
+endfunction
+
 function! s:wipe(ctx)
   if buflisted(a:ctx['buf'] )
     exe a:ctx['buf'] 'bwipe!'
@@ -49,8 +56,11 @@ function! s:exit_cb(ctx, job, st, ...) abort
       let l:action = ''
     endif
 
-    if len(l:items) == 1 && l:action == ''
-      let l:path = a:ctx.basepath . '/' . l:items[0]
+    if len(l:items) ==# 1 && l:action ==# ''
+      let l:path = l:items[0]
+      if s:relative_path(l:path)
+        let l:path = a:ctx.basepath . '/' . l:path
+      endif
       if filereadable(expand(l:path))
         if &modified
           if winwidth(win_getid()) > winheight(win_getid()) * 3
@@ -64,7 +74,10 @@ function! s:exit_cb(ctx, job, st, ...) abort
       endif
     else
       for l:item in l:items
-        let l:path = a:ctx.basepath . '/' . l:item
+        let l:path = l:item
+        if s:relative_path(l:path)
+          let l:path = a:ctx.basepath . '/' . l:path
+        endif
         if filereadable(expand(l:path))
           if l:action == ''
             exe 'sp' l:path
