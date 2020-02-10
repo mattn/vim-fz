@@ -131,8 +131,12 @@ function! fz#run(...)
 
   " check type
   let l:typ = get(l:ctx['options'], 'type', 'cmd')
+  let l:pipe_cmd = ''
   if l:typ ==# 'cmd'
     let l:fz_command = get(l:ctx['options'], 'fz_command', g:fz_command)
+    if has_key(l:ctx['options'], 'cmd')
+        let l:pipe_cmd = l:ctx['options']['cmd'] . ' | '
+    endif
   elseif l:typ ==# 'file'
     if !has_key(l:ctx['options'], 'file')
       echohl ErrorMsg | echo "invalid argument. 'file' required." | echohl None
@@ -165,7 +169,7 @@ function! fz#run(...)
       let l:cmd = [&shell, &shellcmdflag, printf('%s%s > %s < %s', l:fz_command, l:fz_options, l:ctx['tmp_result'], l:ctx['tmp_input'])]
     endif
   else
-    let l:cmd = [&shell, &shellcmdflag, printf('%s%s > %s', l:fz_command, l:fz_options, l:ctx['tmp_result'])]
+    let l:cmd = [&shell, &shellcmdflag, printf('%s%s%s > %s', l:pipe_cmd, l:fz_command, l:fz_options, l:ctx['tmp_result'])]
   endif
   botright new
   let l:ctx['buf'] = bufnr('%')
