@@ -18,5 +18,7 @@ nnoremap <Plug>(fz) :<c-u>Fz<cr>
 nnoremap <Plug>(fz-mru) :<c-u>FzMRU<cr>
 if !hasmapto('<Plug>(fz)')
   nmap ,f <Plug>(fz)
+endif
+if !hasmapto('<Plug>(fz-mru)')
   nmap ,, <Plug>(fz-mru)
 endif
