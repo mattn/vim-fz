@@ -13,7 +13,7 @@ let g:fz_command_actions = {
   \ }
 
 command! -nargs=* -complete=dir Fz call fz#run({'basepath': <q-args>})
-command! -nargs=* -complete=dir FzMRU call fz#run({'basepath': <q-args>, 'type': 'list', 'list': map(filter(map(copy(v:oldfiles), 'expand(v:val)'), 'filereadable(v:val)'), 'fnamemodify(v:val, ":~:.:gs!\\!/!")')})
+command! -nargs=* -complete=dir FzMRU call fz#run({'basepath': <q-args>, 'type': 'list', 'list': fz#utils#uniq(map(filter(map(map(range(bufnr('$'), 1, -1), 'bufname(v:val)') + copy(v:oldfiles), 'expand(v:val)'), 'filereadable(v:val)'), 'fnamemodify(v:val, ":~:.:gs!\\!/!")'))})
 nnoremap <Plug>(fz) :<c-u>Fz<cr>
 nnoremap <Plug>(fz-mru) :<c-u>FzMRU<cr>
 if !hasmapto('<Plug>(fz)')
