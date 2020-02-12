@@ -178,5 +178,4 @@ function! fz#run(...)
   else
     call term_start(l:cmd, {'term_name': 'Fz', 'curwin': l:ctx['buf'], 'exit_cb': function('s:exit_cb', [l:ctx]), 'tty_type': 'conpty', 'cwd': l:ctx['basepath']})
   endif
-  redraw!
 endfunction
