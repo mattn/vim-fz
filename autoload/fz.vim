@@ -3,7 +3,7 @@ let s:is_win = has('win32') || has('win64')
 
 function! s:absolute_path(path) abort
   if has('win32')
-    return a:path =~# '^\([/\]\|\w:[/\]\)'
+    return a:path =~# '^\([/\\]\|[a-zA-Z]:[/\\]\)'
   endif
   return a:path =~# '^/'
 endfunction
