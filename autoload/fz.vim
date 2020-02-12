@@ -57,7 +57,7 @@ function! s:exit_cb(ctx, job, st, ...) abort
     endif
 
     if len(l:items) ==# 1 && l:action ==# ''
-      let l:path = l:items[0]
+      let l:path = expand(l:items[0])
       if !s:absolute_path(l:path)
         let l:path = a:ctx.basepath . '/' . l:path
       endif
@@ -74,7 +74,7 @@ function! s:exit_cb(ctx, job, st, ...) abort
       endif
     else
       for l:item in l:items
-        let l:path = l:item
+        let l:path = expand(l:item)
         if !s:absolute_path(l:path)
           let l:path = a:ctx.basepath . '/' . l:path
         endif
