@@ -57,10 +57,21 @@ function! s:exit_cb(ctx, job, st, ...) abort
     endif
 
     if len(l:items) ==# 1 && l:action ==# ''
-      let l:path = expand(l:items[0])
+
+	  if get(a:ctx['options'], 'output', '') ==# 'rgcolumn'
+        let l:parts = matchlist(l:items[0], '\(.\{-}\):\(\d\+\)\%(:\(\d\+\)\)\?\%(:\(.*\)\)\?')
+        let l:path = &acd ? fnamemodify(l:parts[1], ':p') : l:parts[1]
+		let l:path = expand(l:path)
+        let l:lnum = l:parts[2]
+        let l:col = l:parts[3]
+      else
+		  let l:path = expand(l:items[0])
+	  endif
+
       if !s:absolute_path(l:path)
         let l:path = a:ctx.basepath . '/' . l:path
       endif
+
       if filereadable(expand(l:path))
         if &modified
           if winwidth(win_getid()) > winheight(win_getid()) * 3
@@ -70,6 +81,11 @@ function! s:exit_cb(ctx, job, st, ...) abort
           endif
         else
           exe 'edit' l:path
+        endif
+        if exists('l:lnum') | execute l:lnum | endif
+        if exists('l:col') | execute 'normal!' l:col . '|' | endif
+        if exists('l:lnum') || exists('l:col')
+          normal! zz
         endif
       endif
     else
