@@ -176,7 +176,7 @@ function! fz#run(...)
   if s:is_nvim
     call termopen(l:cmd, {'on_exit': function('s:exit_cb', [l:ctx]), 'cwd': l:ctx['basepath']}) | startinsert
   else
-    call term_start(l:cmd, {'term_name': 'Fz', 'curwin': l:ctx['buf'], 'exit_cb': function('s:exit_cb', [l:ctx]), 'tty_type': 'conpty', 'cwd': l:ctx['basepath']})
+    call term_start(l:cmd, {'term_name': 'Fz', 'curwin': l:ctx['buf'] > 0, 'exit_cb': function('s:exit_cb', [l:ctx]), 'tty_type': 'conpty', 'cwd': l:ctx['basepath']})
   endif
   if has_key(l:ctx['options'], 'message')
     echo l:ctx['options']['message']
