@@ -14,6 +14,26 @@ But very very experimental!
 
 Or type `,f`
 
+## APIs
+
+### type: cmd
+
+```vim
+nnoremap <C-p> :execute system('git rev-parse --is-inside-work-tree') =~ 'true'
+      \ ? fz#run({ 'type': 'cmd', 'cmd': 'git ls-files' })
+      \ : 'Fz'<CR>
+```
+
+### type: list
+
+```vim
+command! FzColors call fz#run({
+    \ 'type': 'list',
+    \ 'list': uniq(map(split(globpath(&rtp, "colors/*.vim"), "\n"), "substitute(fnamemodify(v:val, ':t'), '\\..\\{-}$', '', '')")),
+    \ 'accept': {result->execute('colorscheme ' . result['items'][0])},
+    \ })
+```
+
 ## Requirements
 
 * [gof](https://github.com/mattn/gof)
